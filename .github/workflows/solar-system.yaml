@@ -71,6 +71,8 @@ jobs:
 
   docker:
     name: Containerization
+    permissions:
+      packages: write
     runs-on: ubuntu-latest
     needs: [unit-testing, code-coverage]
     steps:
@@ -110,7 +112,7 @@ jobs:
         echo $IP
         echo Testing Image URL using wget
         wget -q -O - 127.0.0.1:3000/live | grep live
-        
+
     - name: Docker Push
       uses: docker/build-push-action@v4
       with:
