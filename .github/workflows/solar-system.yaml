@@ -15,6 +15,15 @@ env:
 jobs:
   unit-testing:
     name: Unit Testing
+    env:
+      MONGO_URI: 'mongodb://localhost:27017/superData'
+      MONGO_USERNAME: non-prod-user
+      MONGO_PASSWORD: non-prod-password
+    services:
+      mongo_db:
+        image: siddharth67/mongo-db:non-prod 
+        ports: 
+          - 27017:27017 # must use port mapping if running processes directly on the runner (i.e. not using container: ...)
     strategy:
       matrix:
         nodejs_version: [18, 19, 20]
@@ -37,6 +46,7 @@ jobs:
         run: npm test
 
       - name: Archive Test Result
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: archived-test-result-${{ matrix.operating_system }}-${{ matrix.nodejs_version }}
@@ -45,15 +55,24 @@ jobs:
 
   code-coverage:
     name: Code Coverage
+    container:
+      image: node:18
+    services:
+      mongo-db:
+        image: siddharth67/mongo-db:non-prod
+    env:
+      MONGO_URI: 'mongodb://mongo-db:27017/superData'
+      MONGO_USERNAME: non-prod-user
+      MONGO_PASSWORD: non-prod-password
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
       
-      - name: Setup NodeJS Version 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      # - name: Setup NodeJS Version 18
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 18
       
       - name: Install Dependencies
         run: npm install
